@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png"><meta name="theme-color" content="#7a1316"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Focus"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Focus On Performance</title>
+<style>
+:root{--bg:#f3f1ee;--cd:#fff;--tx:#1d2125;--mu:#6c737b;--ac:#d9480f;--bd:#e2ded8;--z1:#9aa5b1;--z2:#3b9ae1;--z3:#e8b923;--z4:#ee7d2b;--z5:#d12f2f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171a;--cd:#1e2327;--tx:#eceef0;--mu:#9aa3ab;--ac:#ff8a4c;--bd:#2d343a}}
+:root[data-theme="dark"]{--bg:#14171a;--cd:#1e2327;--tx:#eceef0;--mu:#9aa3ab;--ac:#ff8a4c;--bd:#2d343a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:84px;font-variant-numeric:tabular-nums}
+main{max-width:560px;margin:0 auto;padding:12px}
+.race{background:var(--ac);color:#fff;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+:root[data-theme="dark"] .race{color:#1a1a1a}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .race{color:#1a1a1a}}
+.race b{font-size:30px;line-height:1}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
+h2{font-size:17px;margin:14px 0 8px}h3{font-size:14px;margin:0 0 8px;color:var(--mu);font-weight:600}
+.mu{color:var(--mu);font-size:13px}
+.row{display:flex;gap:8px;align-items:center}.sp{justify-content:space-between}
+.seg{display:flex;background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:3px;margin-bottom:10px}
+.seg button{flex:1;border:0;background:none;color:var(--mu);padding:7px;border-radius:8px;font:inherit}
+.seg button.on{background:var(--tx);color:var(--bg)}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:600}
+:root[data-theme="dark"] .btn{color:#1a1a1a}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#1a1a1a}}
+.ghost{background:none;border:1px solid var(--bd);border-radius:10px;padding:8px 12px}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.nav button{background:var(--cd);border:1px solid var(--bd);border-radius:10px;width:40px;height:38px;font-size:18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;margin-bottom:10px}
+.stats div{background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:8px 2px}
+.stats b{display:block;font-size:17px}.stats span{font-size:11px;color:var(--mu)}
+.s{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd)}.s:last-child{border:0}
+.s .ic{font-size:22px}.s .m{flex:1;min-width:0}
+.chip{display:inline-block;border-radius:6px;padding:0 6px;font-size:12px;font-weight:700;color:#111}
+.z1{background:var(--z1)}.z2{background:var(--z2)}.z3{background:var(--z3)}.z4{background:var(--z4)}.z5{background:var(--z5);color:#fff}
+.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}.bar i{width:74px;font-style:normal;flex:none}
+.bar .t{flex:1;height:12px;background:var(--bd);border-radius:6px;overflow:hidden}.bar .t u{display:block;height:100%;border-radius:6px}.bar em{width:64px;text-align:right;font-style:normal;flex:none}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal div{aspect-ratio:1;border-radius:8px;border:1px solid var(--bd);font-size:12px;padding:3px;background:color-mix(in srgb,var(--ac) calc(var(--i,0)*100%),var(--cd))}
+.cal .h{border:0;aspect-ratio:auto;background:none;text-align:center;color:var(--mu)}.cal .td{outline:2px solid var(--tx)}
+.ch{display:flex;align-items:flex-end;gap:6px;height:110px}.ch div{flex:1;text-align:center;font-size:10px;color:var(--mu);display:flex;flex-direction:column;justify-content:flex-end;height:100%}.ch u{display:block;background:var(--ac);border-radius:4px 4px 0 0;min-height:2px}
+.ins{border-left:4px solid var(--bd);padding:6px 10px;margin:8px 0;font-size:14px}.ins.w{border-color:var(--z4)}.ins.b{border-color:var(--z5)}.ins.g{border-color:#2e9e5b}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--cd);border-top:1px solid var(--bd);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+nav.tabs button{flex:1;border:0;background:none;color:var(--mu);padding:6px;font-size:12px}nav.tabs button.on{color:var(--ac);font-weight:700}
+nav.tabs span{display:block;font-size:20px}
+dialog{border:1px solid var(--bd);border-radius:14px;background:var(--cd);color:var(--tx);width:min(94vw,440px);padding:14px}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+label{display:block;font-size:12px;color:var(--mu);margin:8px 0 3px}
+input,select,textarea{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tg{display:flex;flex-wrap:wrap;gap:6px;border-radius:12px}.tc{margin:0;display:block}.tc input{display:none}.tc span{display:block;padding:6px 11px;border:1px solid var(--bd);border-radius:20px;font-size:13px;color:var(--tx)}.tc input:checked+span{background:var(--tx);border-color:var(--tx);color:var(--bg)}
+.x{background:none;border:0;color:var(--mu);font-size:18px}
+.cv{display:flex;align-items:center;gap:14px;padding:16px;border-radius:18px;margin-bottom:12px;color:#fff;background:linear-gradient(135deg,#b3261e 0%,#7a1316 45%,#2e070a 100%)}
+.cv svg{width:64px;height:64px;flex:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+.cv b{font-size:21px;font-weight:800;display:block;line-height:1.15}.cv span{font-size:13px;opacity:.8}
+</style></head><body><main>
+<div class="cv"><svg viewBox="0 0 100 100" aria-label="Logo"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c8372d"/><stop offset="1" stop-color="#3d0a0d"/></linearGradient></defs><rect width="100" height="100" rx="23" fill="url(#lg)"/><g fill="#fff"><path d="M34 19.2H66.2V23.7H34Z"/><path d="M34 81.2V49.5H66.2V54H50.7A12 12 0 0 0 38.7 66V81.2Z"/></g></svg><div><b>Focus On Performance</b><span>Challenge yourself</span></div></div>
+<div class="card" id="ins" hidden></div>
+<div id="rc"></div><div id="v"></div></main>
+<nav class="tabs" id="tb"></nav>
+<dialog id="dl"><div id="df"></div></dialog>
+<script>
+const T=["Koşu","Bisiklet","Yüzme","Kuvvet","Yürüyüş","Diğer","Crossfit","Hyrox","İnterval koşu","Jogging","Trail","Natural"],IC=["🏃","🚴","🏊","🏋️","🥾","⚡","🔥","🛷","⏱️","👟","⛰️","🌿"];
+const ZN=["","Toparlanma","Aerobik","Tempo","Eşik","VO₂max+"],ZC=["","var(--z1)","var(--z2)","var(--z3)","var(--z4)","var(--z5)"];
+const $=s=>document.querySelector(s);
+let S={w:[],r:[]},tab="takip",mode="gun",cur=new Date(),per=28;
+try{const x=localStorage.getItem("ant1");if(x)S=JSON.parse(x)}catch(e){}
+const save=()=>{try{localStorage.setItem("ant1",JSON.stringify(S))}catch(e){}};
+S.mx=S.mx||190;
+const zH=h=>{const p=h/S.mx;return p<.6?1:p<.7?2:p<.8?3:p<.9?4:5},RZ=[0,2,4,6,8,9];
+function rz(){S.w.forEach(w=>{if(w.hr&&!w.zs){w.z=zH(w.hr);if(!w.rs)w.rpe=RZ[w.z]}})}
+const iso=d=>{const z=new Date(d);z.setMinutes(z.getMinutes()-z.getTimezoneOffset());return z.toISOString().slice(0,10)};
+const pd=s=>new Date(s+"T12:00:00"),add=(d,n)=>{const z=new Date(d);z.setDate(z.getDate()+n);return z};
+const ws=d=>add(d,-((d.getDay()+6)%7));
+const fm=d=>d.toLocaleDateString("tr-TR",{day:"numeric",month:"short"});
+const zA=r=>r<=3?1:r==4?2:r<=6?3:r<=8?4:5;
+const ld=w=>w.dur*w.rpe;
+const ty=w=>w.ts||[w.t||0];
+const rg=(a,b)=>S.w.filter(w=>w.d>=a&&w.d<=b);
+const sum=l=>({n:l.length,dur:l.reduce((a,w)=>a+w.dur,0),km:l.reduce((a,w)=>a+(w.km||0),0),ld:l.reduce((a,w)=>a+ld(w),0)});
+const hm=m=>m>=60?Math.floor(m/60)+"s "+(m%60)+"dk":m+"dk";
+const today=()=>iso(new Date());
+
+function head(){
+  const up=S.r.filter(r=>r.d>=today()).sort((a,b)=>a.d.localeCompare(b.d))[0];
+  $("#rc").innerHTML=up?`<div class="race"><div><div>🏁 ${up.n}</div><div style="font-size:13px;opacity:.85">${fm(pd(up.d))} · ${up.p} yarışı${up.k?" · "+up.k:""}</div></div><div style="text-align:right"><b>${Math.round((pd(up.d)-pd(today()))/864e5)}</b><div style="font-size:12px">gün kaldı</div></div></div>`:"";
+}
+function tabs(){
+  $("#tb").innerHTML=[["takip","📅","Takip"],["rapor","📊","Rapor"],["yaris","🏁","Yarışlar"]].map(t=>`<button class="${tab==t[0]?"on":""}" onclick="tab='${t[0]}';go()"><span>${t[1]}</span>${t[2]}</button>`).join("");
+}
+function go(){head();tabs();$("#v").innerHTML=tab=="takip"?takip():tab=="rapor"?rapor():yaris();window.scrollTo(0,0)}
+
+function sess(w){
+  return `<div class="s"><div class="ic">${ty(w).map(i=>IC[i]).join("")}</div><div class="m"><b>${ty(w).map(i=>T[i]).join(" + ")}</b> · ${hm(w.dur)}${w.km?" · "+w.km+" km":""} <span class="chip z${w.z}">Z${w.z}</span><div class="mu">${w.hr?"♥ "+w.hr+(w.hx?"/"+w.hx:"")+" · ":""}RPE ${w.rpe}${w.rs?"":" (tahmini)"} · yük ${ld(w)}${w.pl?" · ✓ plana uygun":" · plan dışı"}</div>${w.nt?`<div class="mu">${w.nt.replace(/</g,"&lt;")}</div>`:""}</div><button class="x" onclick="wf('${w.id}')">✎</button></div>`;
+}
+function step(n){
+  if(mode=="gun")cur=add(cur,n);else if(mode=="hafta")cur=add(cur,7*n);else{cur=new Date(cur.getFullYear(),cur.getMonth()+n,1,12)}go();
+}
+function takip(){
+  const d=cur;let a,b,lab;
+  if(mode=="gun"){a=b=iso(d);lab=d.toLocaleDateString("tr-TR",{weekday:"long",day:"numeric",month:"long"})}
+  else if(mode=="hafta"){const s=ws(d);a=iso(s);b=iso(add(s,6));lab=fm(s)+" – "+fm(add(s,6))}
+  else{a=iso(new Date(d.getFullYear(),d.getMonth(),1,12));b=iso(new Date(d.getFullYear(),d.getMonth()+1,0,12));lab=d.toLocaleDateString("tr-TR",{month:"long",year:"numeric"})}
+  const l=rg(a,b),s=sum(l);
+  let h=`<div class="seg">${[["gun","Gün"],["hafta","Hafta"],["ay","Ay"]].map(m=>`<button class="${mode==m[0]?"on":""}" onclick="mode='${m[0]}';go()">${m[1]}</button>`).join("")}</div>
+  <div class="nav"><button onclick="step(-1)">‹</button><b onclick="cur=new Date();go()" style="text-transform:capitalize">${lab}</b><button onclick="step(1)">›</button></div>
+  <div class="stats"><div><b>${s.n}</b><span>seans</span></div><div><b>${hm(s.dur)}</b><span>süre</span></div><div><b>${Math.round(s.km*10)/10}</b><span>km</span></div><div><b>${s.ld}</b><span>yük</span></div></div>`;
+  if(mode=="gun"){
+    h+=`<div class="card">${l.length?l.map(sess).join(""):`<div class="mu">Bu gün kayıt yok. Plana uymasan da yaptığını yaz.</div>`}</div>`;
+  }else if(mode=="hafta"){
+    h+=`<div class="card">`+[0,1,2,3,4,5,6].map(i=>{const dd=add(ws(d),i),x=rg(iso(dd),iso(dd));return `<div class="s" onclick="cur=pd('${iso(dd)}');mode='gun';go()"><div style="width:54px"><b>${dd.toLocaleDateString("tr-TR",{weekday:"short"})}</b><div class="mu">${fm(dd)}</div></div><div class="m">${x.length?x.map(w=>`${ty(w).map(i=>IC[i]).join("")} ${hm(w.dur)} <span class="chip z${w.z}">Z${w.z}</span>`).join(" &nbsp; "):`<span class="mu">dinlenme / kayıt yok</span>`}</div></div>`}).join("")+`</div>`;
+  }else{
+    const f=new Date(d.getFullYear(),d.getMonth(),1,12),off=(f.getDay()+6)%7,n=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    h+=`<div class="card"><div class="cal">`+["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"].map(x=>`<div class="h">${x}</div>`).join("")+"<span></span>".repeat(off).replace(/<span><\/span>/g,'<span style="display:block"></span>');
+    for(let i=1;i<=n;i++){const k=iso(new Date(d.getFullYear(),d.getMonth(),i,12)),x=rg(k,k),y=sum(x);h+=`<div class="${k==today()?"td":""}" style="--i:${Math.min(.85,y.ld/700)}" onclick="cur=pd('${k}');mode='gun';go()">${i}${y.n?`<br><b>${y.dur}’</b>`:""}</div>`}
+    h+=`</div><div class="mu" style="margin-top:8px">Koyu hücre = yüksek yük (süre × RPE). Güne dokununca detay açılır.</div></div>`;
+  }
+  return h+`<div style="position:sticky;bottom:80px;text-align:right"><button class="btn" onclick="wf()" style="box-shadow:0 4px 14px rgba(0,0,0,.3)">＋ Antrenman ekle</button></div>`;
+}
+
+function bars(items,tot,fmt){return items.filter(i=>i[1]>0).map(i=>`<div class="bar"><i>${i[0]}</i><div class="t"><u style="width:${tot?i[1]/tot*100:0}%;background:${i[2]}"></u></div><em>${fmt(i[1])}</em></div>`).join("")||`<div class="mu">Veri yok</div>`}
+function rapor(){
+  const t=today(),a=iso(add(pd(t),-per+1)),l=rg(a,t),s=sum(l);
+  let h=`<div class="seg">${[7,28,90].map(p=>`<button class="${per==p?"on":""}" onclick="per=${p};go()">Son ${p} gün</button>`).join("")}</div>
+  <div class="stats"><div><b>${s.n}</b><span>seans</span></div><div><b>${hm(s.dur)}</b><span>süre</span></div><div><b>${Math.round(s.km)}</b><span>km</span></div><div><b>${s.ld}</b><span>toplam yük</span></div></div>`;
+  const zt=[1,2,3,4,5].map(z=>l.filter(w=>w.z==z).reduce((x,w)=>x+w.dur,0));
+  const lo=zt[0]+zt[1],mo=zt[2],hi=zt[3]+zt[4],T0=lo+mo+hi;
+  const tp=T.map((n,i)=>[IC[i]+" "+n,Math.round(l.filter(w=>ty(w).includes(i)).reduce((x,w)=>x+w.dur/ty(w).length,0)),"var(--ac)"]);
+  h+=`<div class="card"><h3>Zone dağılımı (süreye göre)</h3>${bars(zt.map((v,i)=>["Z"+(i+1)+" "+ZN[i+1],v,ZC[i+1]]),T0,hm)}</div>
+  <div class="card"><h3>Şiddet dağılımı</h3>${bars([["Düşük (Z1–2)",lo,"var(--z2)"],["Orta (Z3)",mo,"var(--z3)"],["Yüksek (Z4–5)",hi,"var(--z5)"]],T0,v=>Math.round(v/T0*100)+"%")}<div class="mu">Hedef: yaklaşık %80 düşük, %20 orta+yüksek.</div></div>
+  <div class="card"><h3>Tür dağılımı (süre)</h3>${bars(tp,s.dur,hm)}</div>`;
+  const wk=[];for(let i=7;i>=0;i--){const st=add(ws(pd(t)),-7*i),x=sum(rg(iso(st),iso(add(st,6))));wk.push([fm(st),x])}
+  const mx=Math.max(1,...wk.map(x=>x[1].ld));
+  h+=`<div class="card"><h3>Haftalık yük (son 8 hafta)</h3><div class="ch">${wk.map(x=>`<div>${x[1].ld||""}<u style="height:${x[1].ld/mx*80}%"></u>${x[0]}</div>`).join("")}</div><div class="mu" style="margin-top:6px">Haftalık süre: ${wk.map(x=>Math.round(x[1].dur/6)/10+"s").join(" · ")}</div></div>`;
+  // metrics
+  const ac=sum(rg(iso(add(pd(t),-6)),t)).ld,ch=sum(rg(iso(add(pd(t),-27)),t)).ld/4,acwr=ch?ac/ch:0;
+  const dl=[...Array(7)].map((_,i)=>{const k=iso(add(pd(t),-i));return sum(rg(k,k)).ld}),mean=dl.reduce((x,y)=>x+y,0)/7,sd=Math.sqrt(dl.reduce((x,y)=>x+(y-mean)**2,0)/7),mono=sd?mean/sd:0;
+  const pl=l.filter(w=>w.pl).length;
+  h+=`<div class="card"><h3>Yük göstergeleri</h3><div class="stats" style="grid-template-columns:repeat(3,1fr)"><div><b>${ch?acwr.toFixed(2):"–"}</b><span>akut:kronik</span></div><div><b>${sd?mono.toFixed(1):"–"}</b><span>monotoni (7g)</span></div><div><b>${s.n?Math.round(pl/s.n*100)+"%":"–"}</b><span>plana uyum</span></div></div><div class="mu">Yük = süre (dk) × RPE (Foster seans-RPE yöntemi). Akut:kronik = son 7 gün ÷ son 28 günün haftalık ortalaması.</div></div>`;
+  // insights
+  const I=[];
+  if(!s.n)I.push(["","Bu dönemde kayıt yok. Antrenmanı sonradan da olsa girmen yeterli."]);
+  else{
+    if(T0){const lp=lo/T0*100,hp=hi/T0*100;
+      if(lp<65)I.push(["w",`Düşük şiddet payı %${Math.round(lp)}. Çoğu seans orta-yüksek bölgede; kolay günler yeterince kolay olmayabilir, toparlanma ve aerobik gelişim zayıflar.`]);
+      else if(lp>=75&&hp>=8)I.push(["g",`Dağılım %${Math.round(lp)} düşük / %${Math.round(hp)} yüksek: polarize (80/20) modele yakın, iyi.`]);
+      else if(lp>=75&&hp<8)I.push(["",`Neredeyse hepsi kolay (%${Math.round(lp)}). Aerobik temel için iyi, ama yarışa yaklaşırken eşik/VO₂max seansları eklemek gerekir.`]);
+      if(mo/T0>.3)I.push(["w",`Z3 payı %${Math.round(mo/T0*100)}. “Gri bölge” yorar ama güçlü uyaran vermez; kolayı daha kolay, sertleri daha sert yapmayı dene.`])}
+    if(ch){if(acwr>1.5)I.push(["b",`Akut:kronik ${acwr.toFixed(2)}: yük son haftalara göre çok hızlı arttı, sakatlık riski yüksek. Birkaç gün hafiflet.`]);
+      else if(acwr>1.3)I.push(["w",`Akut:kronik ${acwr.toFixed(2)}: artış hızlı. Yükü sabit tut, üstüne eklemeyi bekle.`]);
+      else if(acwr>=.8)I.push(["g",`Akut:kronik ${acwr.toFixed(2)}: 0,8–1,3 aralığında, yük artışı kontrollü.`]);
+      else I.push(["",`Akut:kronik ${acwr.toFixed(2)}: son hafta kronik düzeyin altında. Planlı hafiflik değilse form kaybı olabilir.`])}
+    const lw=wk[7][1].ld,pw=wk[6][1].ld;
+    if(pw>0&&lw>pw*1.3)I.push(["w",`Bu haftanın yükü geçen haftaya göre %${Math.round((lw/pw-1)*100)} fazla. Genel kural: haftalık artış %10–30’u geçmesin.`]);
+    if(sd&&mono>2)I.push(["w",`Monotoni ${mono.toFixed(1)}: günlerin yükü birbirine çok benzer. Sert/kolay günleri belirginleştir.`]);
+    if(s.n>=3&&pl/s.n<.5)I.push(["",`Seansların yalnızca %${Math.round(pl/s.n*100)}’i plana uygun. Plan gerçekçi değilse daha esnek, daha kısa bir iskelet kurmak düzenliliği artırır.`]);
+    const ds=Math.round((pd(t)-pd(l.map(w=>w.d).sort().pop()))/864e5);if(ds>=4)I.push(["w",`Son antrenmandan ${ds} gün geçti.`]);
+  }
+  const up=S.r.filter(r=>r.d>=t).sort((x,y)=>x.d.localeCompare(y.d)).find(r=>r.p=="A"),dd=up?Math.round((pd(up.d)-pd(t))/864e5):99;
+  if(up&&dd<=14)I.push(["b",`A yarışı “${up.n}” ${dd} gün sonra: taper dönemi. Hacmi %30–50 azalt, şiddeti koru, yeni bir şey deneme.`]);
+  else if(up&&dd<=28)I.push(["",`A yarışına ${dd} gün var: son kaliteli antrenman haftaları, ardından taper.`]);
+  h+=`<h2>Değerlendirme</h2>`+I.map(i=>`<div class="ins ${i[0]}">${i[1]}</div>`).join("");
+  h+=`<h2>Ayarlar</h2><div class="card"><label>Maksimum nabız (bpm)</label><input type="number" inputmode="numeric" value="${S.mx}" onchange="S.mx=+this.value||190;rz();save()"><div class="mu" style="margin-top:6px">Zone’lar maks. nabzın yüzdesine göre hesaplanır: Z1 %60 altı, Z2 %60–70, Z3 %70–80, Z4 %80–90, Z5 %90 üstü. Değiştirince elle zone seçmediğin kayıtlar yeniden hesaplanır. RPE girmezsen yük, zone’dan tahmin edilen RPE ile hesaplanır.</div></div><h2>Yedek</h2><div class="card"><div class="row"><button class="ghost" onclick="bk()">Yedek al</button><button class="ghost" onclick="rs()">Yedekten yükle</button></div><textarea id="bx" rows="3" placeholder="Yedek metni burada görünür / buraya yapıştır" style="margin-top:8px"></textarea><div class="mu">Veriler yalnızca bu tarayıcıda saklanır. Cihaz değiştirirsen yedeği kopyalayıp yükle.</div></div>`;
+  return h;
+}
+function bk(){const x=$("#bx");x.value=JSON.stringify(S);x.select()}
+function rs(){try{const o=JSON.parse($("#bx").value);if(o.w&&o.r){S=o;save();go()}}catch(e){$("#bx").value="Geçersiz yedek"}}
+
+function yaris(){
+  const t=today(),l=[...S.r].sort((a,b)=>a.d.localeCompare(b.d));
+  return `<h2>Yarış takvimi</h2><div class="card">${l.length?l.map(r=>{const n=Math.round((pd(r.d)-pd(t))/864e5);return `<div class="s"><div class="m"><b>${r.n}</b> <span class="chip" style="background:var(--tx);color:var(--bg)">${r.p}</span><div class="mu">${pd(r.d).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"})}${r.k?" · "+r.k:""}</div></div><div style="text-align:right"><b>${n>=0?n:"–"}</b><div class="mu">${n>0?"gün kaldı":n==0?"bugün!":"geçti"}</div></div><button class="x" onclick="S.r=S.r.filter(x=>x.id!='${r.id}');save();go()">✕</button></div>`}).join(""):`<div class="mu">Henüz yarış yok.</div>`}</div>
+  <div class="card"><h3>Yarış ekle</h3><label>Ad</label><input id="rn" placeholder="İstanbul Yarı Maratonu"><div class="g2"><div><label>Tarih</label><input id="rd" type="date"></div><div><label>Mesafe / tür</label><input id="rk" placeholder="21K"></div></div><label>Öncelik (A: ana hedef, B: önemli, C: antrenman yarışı)</label><select id="rp"><option>A</option><option>B</option><option selected>C</option></select><button class="btn" style="margin-top:10px;width:100%" onclick="ar()">Yarışı kaydet</button></div>`;
+}
+function ar(){const n=$("#rn").value.trim(),d=$("#rd").value;if(!n||!d)return;S.r.push({id:"r"+Date.now(),n,d,k:$("#rk").value.trim(),p:$("#rp").value});save();go()}
+
+function wf(id){
+  const w=S.w.find(x=>x.id==id)||{d:iso(mode=="gun"?cur:new Date()),t:0,ts:[],dur:"",km:"",rpe:5,z:0,pl:false,nt:""};
+  $("#df").innerHTML=`<h3 style="color:var(--tx);font-size:17px">${id?"Antrenmanı düzenle":"Antrenman ekle"}</h3>
+  <div class="g2"><div><label>Tarih</label><input id="fd" type="date" value="${w.d}"></div></div><label>Tür (birden fazla seçebilirsin)</label><div id="ft" class="tg">${T.map((n,i)=>`<label class="tc"><input type="checkbox" value="${i}" ${ty(w).includes(i)?"checked":""}><span>${IC[i]} ${n}</span></label>`).join("")}</div><div class="g2">
+  <div><label>Süre (dk)</label><input id="fu" type="number" inputmode="numeric" value="${w.dur}"></div><div><label>Mesafe (km, ops.)</label><input id="fk" type="number" inputmode="decimal" step="0.1" value="${w.km}"></div></div>
+  <div class="g2"><div><label>Ort. nabız (bpm)</label><input id="fh" type="number" inputmode="numeric" value="${w.hr||""}"></div><div><label>Maks. nabız (bpm)</label><input id="fx" type="number" inputmode="numeric" value="${w.hx||""}"></div></div>
+  <label>Zorluk (RPE)</label><select id="fr"><option value="0">Otomatik (nabızdan hesapla)</option>${[1,2,3,4,5,6,7,8,9,10].map(r=>`<option value="${r}" ${w.rs&&w.rpe==r?"selected":""}>${r}/10${r==1?" çok kolay":r==10?" maksimum":""}</option>`).join("")}</select>
+  <label>Baskın zone (interval/Hyrox’ta elle seç)</label><select id="fz"><option value="0">Otomatik (nabızdan / RPE’den)</option>${[1,2,3,4,5].map(z=>`<option value="${z}" ${z==w.z&&w.zs?"selected":""}>Z${z} ${ZN[z]}</option>`).join("")}</select>
+  <label><input type="checkbox" id="fp" style="width:auto" ${w.pl?"checked":""}> Plana uygundu</label>
+  <label>Antrenman detayı (ne yaptın?)</label><textarea id="fn" rows="3" placeholder="Örn: 6×800m 5K temposu, 90sn dinlenme">${w.nt||""}</textarea>
+  <div class="row sp" style="margin-top:12px"><div>${id?`<button class="ghost" onclick="wd('${id}')">Sil</button>`:""}</div><div class="row"><button class="ghost" onclick="$('#dl').close()">Vazgeç</button><button class="btn" onclick="ws2('${id||""}')">Kaydet</button></div></div>`;
+  $("#dl").showModal();
+}
+function ws2(id){
+  const dur=parseInt($("#fu").value);if(!dur||dur<1){$("#fu").focus();return}
+  const hr=parseInt($("#fh").value)||0,hx=parseInt($("#fx").value)||0,rs=+$("#fr").value,zs=+$("#fz").value;
+  let z=zs||(hr?zH(hr):0);const rpe=rs||(z?RZ[z]:5);if(!z)z=zA(rpe);
+  const ts=[...document.querySelectorAll("#ft input:checked")].map(x=>+x.value);if(!ts.length){$("#ft").style.outline="2px solid var(--z5)";$("#ft").scrollIntoView({block:"center"});return}
+  const o={id:id||"w"+Date.now(),d:$("#fd").value||today(),ts,t:ts[0],dur,km:parseFloat($("#fk").value)||0,hr,hx,rpe,rs:!!rs,z,zs:!!zs,pl:$("#fp").checked,nt:$("#fn").value.trim()};
+  const i=S.w.findIndex(x=>x.id==id);if(i>=0)S.w[i]=o;else S.w.push(o);
+  save();cur=pd(o.d);$("#dl").close();go();
+}
+function wd(id){S.w=S.w.filter(x=>x.id!=id);save();$("#dl").close();go()}
+go();
+(function(){const e=$("#ins");let d=0;try{d=localStorage.getItem("insx")}catch(x){}
+if(d||navigator.standalone||matchMedia("(display-mode: standalone)").matches)return;
+e.hidden=false;e.innerHTML=`<b>📲 Telefona yükle</b><div class="mu" style="margin:6px 0"><b>iPhone (Safari):</b> Paylaş → Ana Ekrana Ekle.<br><b>Android (Chrome):</b> ⋮ menü → Uygulamayı yükle / Ana ekrana ekle.<br></div><button class="ghost" onclick="try{localStorage.setItem('insx',1)}catch(e){};$('#ins').hidden=true">Tamam, gizle</button>`;
+})();
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script></body></html>
