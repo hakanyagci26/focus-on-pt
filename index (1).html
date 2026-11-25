@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Focus On PT</title>
+<meta name="theme-color" content="#0a3324">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#14181f;--mu:#6b7280;--ac:#0ea5b7;--gr:linear-gradient(135deg,#14c4cc,#0b2c63);--ok:#2f9e44;--bad:#e03131;--bd:#e5e7eb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--card:#1a1d24;--tx:#f1f3f5;--mu:#9aa1ad;--bd:#2a2e38;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1115;--card:#1a1d24;--tx:#f1f3f5;--mu:#9aa1ad;--bd:#2a2e38;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px system-ui,sans-serif;padding-bottom:72px}
+header{padding:14px 16px;font-weight:800;font-size:20px;letter-spacing:.3px;background:linear-gradient(135deg,#2f8f5f,#0a3324);color:#fff;margin-bottom:8px}header b{color:#b7f5d0}header svg{border-radius:9px;box-shadow:0 0 0 1.5px rgba(255,255,255,.4)}
+main{padding:0 12px 12px;max-width:640px;margin:auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin:8px 0}
+.row{display:flex;align-items:center;gap:8px}.sp{justify-content:space-between}.mu{color:var(--mu);font-size:13px}
+button,input,select{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:9px 10px}
+input,select{width:100%}button{cursor:pointer}.pri{background:var(--gr);color:#fff;border:0;font-weight:700}
+.ok{background:var(--ok);color:#fff;border:0}.bad{color:var(--bad)}
+.badge{padding:2px 8px;border-radius:99px;font-size:12px;font-weight:700;background:var(--bd)}.badge.low{background:var(--bad);color:#fff}.badge.neg{background:#7c3aed;color:#fff}.badge.good{background:var(--ok);color:#fff}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;color:var(--mu);font-weight:600}nav button.on{color:var(--ac)}
+.time{font-weight:800;font-size:18px;min-width:56px}.done{opacity:.6}.done .nm{text-decoration:line-through}
+.modal{position:fixed;inset:0;background:var(--bg);overflow:auto;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 40px;z-index:20}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}svg{width:100%;height:auto;display:block}header svg{width:38px;height:38px;flex:none}h3{margin:14px 0 6px}.av{border-radius:50%;object-fit:cover;background:var(--ac);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+</style></head><body>
+<header style="display:flex;align-items:center;gap:10px"><svg width="38" height="38" viewBox="0 0 100 100" aria-label="Focus On PT"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f8f5f"/><stop offset="1" stop-color="#0a3324"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#lg)"/><path d="M34 49 H66 V53.6 H54.6 A16 16 0 0 0 38.6 69.6 V81 H34 Z" fill="#fff"/><rect x="34" y="19" width="32" height="4.6" fill="#fff"/></svg><span>Focus On <b>PT</b></span></header><main id="v"></main>
+<nav><button data-t="p">📅 Program</button><button data-t="m">👥 Üyeler</button><button data-t="i">📊 Rapor</button></nav>
+<script>
+let S={members:[],lessons:[]};
+try{S=JSON.parse(localStorage.getItem("focuspt")||"")||S}catch(e){}
+const save=()=>{try{localStorage.setItem("focuspt",JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9);
+const iso=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+let tab="p",date=iso(new Date()),cur=null,metric="w",wk=false,lastT="06:00";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const M=id=>S.members.find(m=>m.id===id);
+const doneCount=id=>S.lessons.filter(l=>l.done&&l.mids.includes(id)).length;
+const left=m=>m.packs.reduce((a,p)=>a+p.n,0)-doneCount(m.id);
+const fd=s=>{const[y,m,d]=s.split("-");return d+"."+m+"."+y};
+const dleft=s=>Math.round((new Date(s)-new Date(iso(new Date())))/864e5);
+const expOf=m=>m.packs.map(p=>p.exp).filter(Boolean).sort().pop();
+const debt=m=>m.packs.reduce((a,p)=>a+p.price-(p.paid??p.price),0);
+const badge=m=>{const r=left(m),e=expOf(m);let h=`<span class="badge ${r<0?"neg":r<=2?"low":"good"}">${r} ders kaldı</span>`;
+if(m.frozen)h+=` <span class="badge">❄️ dondurulmuş</span>`;else if(e&&r>0){const d=dleft(e);if(d<0)h+=` <span class="badge low">süre doldu</span>`;else if(d<=7)h+=` <span class="badge low">${d} gün kaldı</span>`}
+if(debt(m)>0)h+=` <span class="badge" style="background:#f59f00;color:#000">borç ${debt(m)} ₺</span>`;return h};
+const av=(m,s=40)=>m.photo?`<img class="av" style="width:${s}px;height:${s}px" src="${m.photo}">`:`<div class="av" style="width:${s}px;height:${s}px;font-size:${s/2}px">${esc((m.name||"?")[0].toUpperCase())}</div>`;
+const waD=m=>"https://wa.me/"+ph2(m.phone)+"?text="+encodeURIComponent(`Merhaba ${m.name}, ${debt(m)} ₺ ödemeniz kalmıştı, hatırlatmak istedim 🙏`);
+function wa(m){const r=left(m);const t=r<=0?`Merhaba ${m.name}, paketiniz bitti. Yenilemek ister misiniz? 💪`:`Merhaba ${m.name}, paketinizde ${r} ders kaldı. Yenileme için haber verebilirsiniz 💪`;
+return "https://wa.me/"+ph2(m.phone)+"?text="+encodeURIComponent(t)}
+function render(){document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
+$("#v").innerHTML=bb()+(tab==="p"?pg():tab==="m"?mg():ig());}
+function pg(){if(wk)return wg();const ls=S.lessons.filter(l=>l.date===date).sort((a,b)=>a.time.localeCompare(b.time));
+const opts=`<option value="">— üye seç —</option>`+S.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join("");
+return `<div class="row" style="margin-bottom:8px"><button class="pri" style="flex:1">Gün</button><button style="flex:1" onclick="wk=true;render()">Hafta</button></div><div class="row sp"><button onclick="mv(-1)">‹</button><input type="date" value="${date}" onchange="date=this.value;render()" style="text-align:center;font-weight:700"><button onclick="mv(1)">›</button></div>
+<div class="mu" style="margin:6px 4px">${ls.length} ders · ${ls.filter(l=>l.done).length} yapıldı</div>${DN()[date]?`<div class="card" style="border-color:#7c3aed"><div class="row sp"><b>📌 Gün notu</b><span><button onclick="dnote()">✎</button> <button class="bad" onclick="dnd()">✕</button></span></div><div style="white-space:pre-wrap;margin-top:6px">${esc(DN()[date])}</div></div>`:`<button style="width:100%;margin:6px 0" onclick="dnote()">📌 Güne not ekle</button>`}
+${ls.map(l=>{const ms=l.mids.map(M).filter(Boolean);return `<div class="card ${l.done?"done":""}"><div class="row"><div class="time" onclick="et('${l.id}')">${l.time}</div><div style="flex:1"><div class="nm"><b>${ms.map(m=>esc(m.name)).join(" + ")}</b></div><div class="mu">${ms.map(m=>left(m)+" ders").join(" · ")}</div>${l.note?`<div style="font-size:13px;margin-top:4px">📝 ${esc(l.note)}</div>`:""}</div>
+${l.done?`<button onclick="tg('${l.id}')">↩︎</button>`:`<button class="ok" onclick="tg('${l.id}')">✓</button>`}<button onclick="lw('${l.id}')">🏋️</button><button onclick="nt('${l.id}')">📝</button><button class="bad" onclick="del('${l.id}')">✕</button></div></div>`}).join("")||`<div class="card mu">Bu gün için ders yok.</div>`}
+<div class="card"><b>Ders ekle</b><div class="g2" style="margin-top:8px"><input type="time" id="lt" value="${lastT}"><select id="a1">${opts}</select></div>
+<select id="a2" style="margin-top:8px">${opts.replace("— üye seç —","— 2. kişi (isteğe bağlı) —")}</select>
+<button class="pri" style="width:100%;margin-top:8px" onclick="addL()">Ekle</button></div>`}
+function wg(){const d=new Date(date),o=(d.getDay()+6)%7;d.setDate(d.getDate()-o);const N=["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"],t=iso(new Date());let tot=0,h="";
+for(let i=0;i<7;i++){const x=iso(d);d.setDate(d.getDate()+1);const ls=S.lessons.filter(l=>l.date===x).sort((a,b)=>a.time.localeCompare(b.time));tot+=ls.length;
+h+=`<div class="card" onclick="date='${x}';wk=false;render()" style="${x===t?"border-color:var(--ac)":""}"><div class="row sp"><b>${N[i]} ${fd(x).slice(0,5)}</b><span class="mu">${ls.length} ders</span></div>${DN()[x]?`<div class="mu" style="margin-top:4px">📌 ${esc(DN()[x])}</div>`:""}${ls.map(l=>`<div class="row ${l.done?"done":""}" style="margin-top:4px"><span class="time" style="font-size:15px">${l.time}</span><span>${l.mids.map(M).filter(Boolean).map(m=>esc(m.name)).join(" + ")}</span></div>`).join("")}</div>`}
+return `<div class="row" style="margin-bottom:8px"><button style="flex:1" onclick="wk=false;render()">Gün</button><button class="pri" style="flex:1">Hafta</button></div><div class="row sp"><button onclick="mv(-7)">‹</button><b>Haftalık · ${tot} ders</b><button onclick="mv(7)">›</button></div>`+h}
+function mv(n){const d=new Date(date);d.setDate(d.getDate()+n);date=iso(d);render()}
+function addL(){const a=$("#a1").value,b=$("#a2").value;if(!a)return toast("Üye seç");if(M(a).frozen||(b&&M(b).frozen))return toast("Üyelik dondurulmuş. Önce dondurmayı kaldır.");
+const tm=$("#lt").value||"06:00";S.lessons.push({id:uid(),date,time:tm,mids:b&&b!==a?[a,b]:[a],done:false});lastT=String((+tm.slice(0,2)+1)%24).padStart(2,"0")+tm.slice(2);save();render()}
+function tg(id){const l=S.lessons.find(x=>x.id===id);l.done=!l.done;save();render();
+if(l.done){const low=l.mids.map(M).filter(m=>m&&left(m)<=2);
+if(low.length)setTimeout(async()=>{for(const m of low){if(await C(`${m.name}: ${left(m)} ders kaldı. Yenileme mesajı gönderilsin mi?`,"Gönder","Hayır"))go(wa(m))}},150)}}
+async function del(id){const l=S.lessons.find(x=>x.id===id);if(await C(l.done?"Bu ders “yapıldı” işaretli. Silersen kalan ders sayısı geri artar. Silinsin mi?":"Ders silinsin mi? (Ders hakkından düşmez)")){S.lessons=S.lessons.filter(l=>l.id!==id);save();render()}}
+async function et(id){const l=S.lessons.find(x=>x.id===id),t=await P("Yeni saat (örn. 07:00):",l.time);if(t===null)return;const m=t.trim().match(/^(\d{1,2})[:.](\d{2})$/);if(!m||+m[1]>23||+m[2]>59)return toast("Saati 07:00 gibi yaz");l.time=m[1].padStart(2,"0")+":"+m[2];save();render()}
+function mg(){const ms=[...S.members].sort((a,b)=>left(a)-left(b));
+return `<button class="pri" style="width:100%;margin:8px 0" onclick="addM()">+ Yeni üye</button>`+
+(ms.map(m=>`<div class="card row" onclick="cur='${m.id}';det()">${av(m)}<div style="flex:1"><b>${esc(m.name)}</b><div class="mu">${esc(m.phone||"")}</div><div style="margin-top:4px">${badge(m)}</div></div></div>`).join("")||`<div class="card mu">Henüz üye yok.</div>`)}
+async function addM(){const n=await P("Üye adı:");if(!n)return;const p=await P("Telefon (905xx...) — isteğe bağlı:")||"";
+const mm={id:uid(),name:n,phone:p,packs:[],meas:[]};S.members.push(mm);save();render();
+const k=+(await P("Kaç ders? İstediğin sayıyı yaz (örn. 8, 12, 17, 24)\nBoş bırakırsan paketi sonra eklersin.",""));if(k>0){cur=mm.id;await ap(k)}}
+function det(){const m=M(cur);let el=$("#md");if(!el){el=document.createElement("div");el.id="md";el.className="modal";document.body.appendChild(el);hpush()}
+const lm=m.meas.length?m.meas[m.meas.length-1]:null,bv=k=>m.bd?(k==="d"?+m.bd.slice(8):k==="m"?+m.bd.slice(5,7):m.bd.slice(0,4)):"";
+const pts=m.meas.map(x=>({l:fd(x.d).slice(0,5),v:val(x,metric)})).filter(p=>p.v!=null&&!isNaN(p.v));
+el.innerHTML=`<div class="row sp"><button onclick="closeD()">← Geri</button><button class="bad" onclick="delM()">🗑 Sil</button></div>
+<div class="row" style="margin-top:10px">${av(m,64)}<div style="flex:1"><h2 style="margin:0">${esc(m.name)}</h2><div class="mu">Toplam yapılan: ${doneCount(m.id)}</div></div><input type="file" accept="image/*" id="ph" hidden onchange="ph(this)"><button onclick="$('#ph').click()">📷</button>${m.photo?`<button class="bad" onclick="rph()">🗑</button>`:""}</div><div style="margin-top:8px">${badge(m)}</div>
+<div class="row" style="margin-top:10px"><button style="flex:1" onclick="go(wa(M(cur)),'_blank')">💬 WhatsApp hatırlat</button><button onclick="ed()">Düzenle</button></div><button style="width:100%;margin-top:8px" onclick="fz()">${m.frozen?"▶️ Dondurmayı kaldır ("+fd(m.frozen)+"’den beri)":"❄️ Üyeliği dondur"}</button>
+<h3>Paketler</h3>${m.packs.map((p,i)=>{const bor=p.price-(p.paid??p.price);return `<div class="card"><div class="row sp"><span>${fd(p.d)} · <b>${p.n} ders</b></span><span>${p.price} ₺ <button onclick="ep(${i})">✎</button> <button class="bad" onclick="dp(${i})">✕</button></span></div><div class="row sp mu" style="margin-top:6px"><span>${p.exp?"Bitiş: "+fd(p.exp):"Süre sınırı yok"}</span><span>${bor>0?`<b class="bad">Borç ${bor} ₺</b> <button onclick="pay(${i})">Ödeme al</button>`:"✓ Ödendi"}</span></div></div>`}).join("")||`<div class="mu">Paket yok</div>`}
+<div class="row" style="margin-top:6px"><button style="flex:1" onclick="ap(12)">+12 ders</button><button style="flex:1" onclick="ap(24)">+24 ders</button><button style="flex:1" onclick="ap(0)">✏️ Başka sayı</button></div>
+<h3>Profil</h3><div class="card"><div class="mu" style="margin-bottom:4px">Doğum tarihi (gün · ay · yıl)</div><div class="row"><input id="bg" type="number" placeholder="Gün" value="${bv("d")}"><input id="bm" type="number" placeholder="Ay" value="${bv("m")}"><input id="by" type="number" placeholder="Yıl" value="${bv("y")}"></div><div class="row" style="margin-top:8px"><select id="sx"><option value="">Cinsiyet</option><option value="K" ${m.sex==="K"?"selected":""}>Kadın</option><option value="E" ${m.sex==="E"?"selected":""}>Erkek</option></select><button class="pri" onclick="sp()">Kaydet</button></div></div>
+<h3>Ölçüm ekle</h3><div class="g2"><input id="md2" type="date" value="${iso(new Date())}" style="grid-column:1/3"><input id="mt" type="number" step=".1" placeholder="Boy cm" value="${lm&&lm.h||""}"><input id="mw" type="number" step=".1" placeholder="Kilo kg"><input id="mb" type="number" step=".1" placeholder="Bel cm"><input id="mk" type="number" step=".1" placeholder="Kalça cm"><input id="ma" type="number" step=".1" placeholder="Kol cm"><input id="mc" type="number" step=".1" placeholder="Göğüs cm"><input id="mf" type="number" step=".1" placeholder="Yağ % (ops.)"><button class="pri" style="grid-column:1/3" onclick="am()">Ölçümü kaydet</button></div>
+<h3>Sağlık durumu (son ölçüm)</h3><div class="card" style="line-height:1.9">${lm?[bmiInfo(lm),waistInfo(m,lm),whrInfo(m,lm)].filter(Boolean).join("<br>")||"<span class='mu'>Boy, bel ve kalça gir</span>":"<span class='mu'>Ölçüm yok</span>"}<div class="mu" style="font-size:12px;margin-top:6px">WHO ölçütleri esas alınmıştır; tanı değildir. Kaslı kişilerde VKİ yanıltıcı olabilir.</div></div>
+<h3>Takip grafiği</h3>
+<div class="row" style="margin:10px 0;flex-wrap:wrap">${Object.entries(ml).map(([k,v])=>`<button class="${metric===k?"pri":""}" style="flex:1 1 28%;padding:8px 4px;font-size:13px" onclick="metric='${k}';det()">${v}</button>`).join("")}</div>
+<div class="card">${line(pts)}</div>
+<h3>Antrenman günlüğü</h3>${wlist(m)}<h3>Ders geçmişi</h3>${lh(m)}<h3>Ölçüm geçmişi</h3>${mhist(m)}<button class="bad" style="width:100%;margin-top:24px" onclick="delM()">🗑 Üyeyi sil</button>`}
+const ml={w:"Kilo",h:"Boy",waist:"Bel",hip:"Kalça",arm:"Kol",chest:"Göğüs",fat:"Yağ %",whr:"Bel/Kalça",bmi:"VKİ"};
+const val=(x,k)=>{if(k==="whr")return x.waist&&x.hip?+(x.waist/x.hip).toFixed(2):null;if(k==="bmi")return x.w&&x.h?+(x.w/Math.pow(x.h/100,2)).toFixed(1):null;return x[k]===""||x[k]==null?null:+x[k]};
+const col=(ok,mid)=>ok?"var(--ok)":mid?"#f59f00":"var(--bad)";
+const whrInfo=(m,x)=>{const r=val(x,"whr");if(r==null)return"";if(!m.sex)return `Bel/Kalça ${r} · değerlendirme için cinsiyet seç`;const lim=m.sex==="E"?.9:.85,ok=r<lim;return `<b style="color:${col(ok)}">Bel/Kalça ${r.toFixed(2)} · ${ok?"Sağlıklı aralık":"Riskli (sınır "+lim.toFixed(2)+")"}</b>`};
+const waistInfo=(m,x)=>{if(!x.waist||!m.sex)return"";const w=+x.waist,[a,b]=m.sex==="E"?[94,102]:[80,88];return `<b style="color:${col(w<a,w<b)}">Bel ${w} cm · ${w<a?"Düşük risk":w<b?"Artmış risk":"Yüksek risk"}</b>`};
+const bmiInfo=x=>{const b=val(x,"bmi");if(b==null)return"";return `<b style="color:${col(b>=18.5&&b<25,b<30&&b>=17)}">VKİ ${b} · ${b<18.5?"Zayıf":b<25?"Normal":b<30?"Fazla kilolu":"Obezite"}</b>`};
+function mhist(m){const a=m.meas;return a.map((x,i)=>({x,i,p:a[i-1]})).reverse().map(({x,i,p})=>`<div class="card"><div class="row sp"><b>${fd(x.d)}</b><button class="bad" onclick="dm(${i})">✕</button></div><div class="g2 mu" style="margin-top:6px">${Object.keys(ml).map(k=>{const v=val(x,k);if(v==null)return"";const pv=p?val(p,k):null,d=pv==null?0:+(v-pv).toFixed(2),g=["w","waist","hip","fat","whr","bmi"].includes(k);return `<span>${ml[k]}: <b style="color:var(--tx)">${v}</b>${d?` <span style="color:${g?(d<0?"var(--ok)":"var(--bad)"):"var(--mu)"}">${d>0?"+":""}${d}</span>`:""}</span>`}).join("")}</div><div style="margin-top:6px;font-size:13px">${whrInfo(m,x)}</div></div>`).join("")}
+async function dm(i){if(await C("Ölçüm silinsin mi?")){M(cur).meas.splice(i,1);save();det()}}
+function sp(){const d=+$("#bg").value,mo=+$("#bm").value,y=+$("#by").value,m=M(cur);if(d||mo||y){const t=new Date(y,mo-1,d);if(!(y>1900&&mo>=1&&mo<=12&&d>=1&&t.getDate()===d))return toast("Geçerli bir doğum tarihi gir");m.bd=y+"-"+String(mo).padStart(2,"0")+"-"+String(d).padStart(2,"0")}else m.bd="";m.sex=$("#sx").value;save();det()}
+const bdIn=m=>{if(!m.bd)return null;const o=new Date(),n=new Date(o.getFullYear(),o.getMonth(),o.getDate()),mo=+m.bd.slice(5,7)-1,d=+m.bd.slice(8);let t=new Date(n.getFullYear(),mo,d);if(t<n)t=new Date(n.getFullYear()+1,mo,d);return Math.round((t-n)/864e5)};
+const waB=m=>"https://wa.me/"+ph2(m.phone)+"?text="+encodeURIComponent(`Doğum günün kutlu olsun ${m.name}! 🎉 Sağlıklı, mutlu nice yıllara 💪`);
+const bb=()=>S.members.filter(m=>{const d=bdIn(m);return d!=null&&d<=1}).map(m=>{const d=bdIn(m),a=new Date(Date.now()+d*864e5).getFullYear()-+m.bd.slice(0,4);return `<div class="card row sp" style="border-color:var(--ac)"><span>🎂 <b>${d?"Yarın":"Bugün"}</b> ${esc(m.name)} doğum günü${a>0&&a<120?" · "+a+" yaşına giriyor":""}</span><button onclick="go(waB(M('${m.id}')),'_blank')">💬</button></div>`}).join("");
+function dlg(msg,o){return new Promise(res=>{const el=document.createElement("div");el.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px";
+el.innerHTML=`<div class="card" style="width:100%;max-width:360px;margin:0"><div style="white-space:pre-wrap;margin-bottom:10px">${esc(msg)}</div>${o.input?`<input id="dg" value="${esc(o.def||"")}" style="margin-bottom:10px">`:""}<div class="row"><button style="flex:1" id="dn">${esc(o.no)}</button><button class="pri" style="flex:1" id="dy">${esc(o.ok)}</button></div></div>`;
+document.body.appendChild(el);const i=el.querySelector("#dg");if(i){i.focus();i.select()}
+const end=v=>{el.remove();res(v)};el.querySelector("#dn").onclick=()=>end(o.input?null:false);el.querySelector("#dy").onclick=()=>end(o.input?i.value:true);
+if(i)i.onkeydown=e=>{if(e.key==="Enter")end(i.value)}})}
+const P=(m,d="")=>dlg(m,{input:1,def:d,ok:"Tamam",no:"İptal"}),C=(m,ok="Tamam",no="İptal")=>dlg(m,{ok,no});
+function toast(m){const t=document.createElement("div");t.textContent=m;t.style.cssText="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:99px;z-index:300;max-width:90%;font-size:14px";document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+const go=u=>{const w=window.open(u,"_blank");if(!w)lnk(u)};
+function lnk(u){const el=document.createElement("div");el.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px";
+el.innerHTML=`<div class="card" style="width:100%;max-width:360px;margin:0"><div style="margin-bottom:12px"><b>WhatsApp mesajı hazır</b></div><a class="pri" href="${esc(u)}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:12px;border-radius:10px;text-decoration:none;color:#fff;font-weight:700">💬 WhatsApp’ta aç</a><div class="row" style="margin-top:8px"><button style="flex:1" id="lc">Bağlantıyı kopyala</button><button style="flex:1" id="lx">Kapat</button></div></div>`;
+document.body.appendChild(el);el.querySelector("#lx").onclick=()=>el.remove();el.querySelector("a").onclick=()=>setTimeout(()=>el.remove(),400);
+el.querySelector("#lc").onclick=()=>{navigator.clipboard.writeText(u).then(()=>toast("Kopyalandı"),()=>P("Kopyala:",u))}}
+const ph2=p=>{let d=(p||"").replace(/\D/g,"");if(d.startsWith("00"))d=d.slice(2);else if(d.startsWith("0"))d="90"+d.slice(1);else if(d.length===10)d="90"+d;return d};
+const DN=()=>S.dn||(S.dn={});
+async function dnote(){const t=await P("Gün notu (örn. izin, hasta, tatil):",DN()[date]||"");if(t===null)return;if(t.trim())DN()[date]=t.trim();else delete DN()[date];save();render()}
+async function dnd(){if(await C("Gün notu silinsin mi?")){delete DN()[date];save();render()}}
+const MAIL0="hakanyagci888@gmail.com",mailTo=()=>S.mail||MAIL0;
+function summ(){const d=iso(new Date()),ls=S.lessons.filter(l=>l.date===d).sort((a,b)=>a.time.localeCompare(b.time));
+const nm=l=>l.mids.map(M).filter(Boolean).map(m=>m.name).join(" + ");
+let t="Focus On PT - Günlük özet\nTarih: "+fd(d)+"\n";
+if(DN()[d])t+="Gün notu: "+DN()[d]+"\n";
+t+="\nDersler: "+ls.length+" planlı, "+ls.filter(l=>l.done).length+" yapıldı\n";
+ls.forEach(l=>{t+=l.time+" "+nm(l)+" - "+(l.done?"yapıldı":"yapılmadı")+(l.note?" ("+l.note+")":"")+"\n"});
+const pk=[];S.members.forEach(m=>m.packs.forEach(p=>{if(p.d===d)pk.push(m.name+": "+p.n+" ders, "+p.price+" TL (ödenen "+(p.paid??p.price)+" TL)")}));
+if(pk.length)t+="\nBugün satılan paketler:\n"+pk.join("\n")+"\n";
+const wk=[];S.members.forEach(m=>W(m).forEach(w=>{if(w.d===d)wk.push(m.name+":\n"+w.t)}));
+if(wk.length)t+="\nAntrenman notları:\n"+wk.join("\n\n")+"\n";
+const low=S.members.filter(m=>left(m)<=2);
+if(low.length)t+="\nYenilemesi yaklaşanlar:\n"+low.map(m=>m.name+": "+left(m)+" ders kaldı").join("\n")+"\n";
+const bor=S.members.filter(m=>debt(m)>0);
+if(bor.length)t+="\nÖdeme bekleyenler:\n"+bor.map(m=>m.name+": "+debt(m)+" TL").join("\n")+"\n";
+return t}
+function mpanel(subj,body,copyText,label,extra){const to=mailTo(),u="mailto:"+to+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+const el=document.createElement("div");el.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px";
+el.innerHTML=`<div class="card" style="width:100%;max-width:380px;margin:0;max-height:85vh;overflow:auto"><b>${esc(subj)}</b><div class="mu" style="margin:6px 0">Alıcı: ${esc(to)}</div>${extra||`<pre style="white-space:pre-wrap;font:13px system-ui;max-height:30vh;overflow:auto;background:var(--bg);padding:8px;border-radius:8px">${esc(body)}</pre>`}<a class="pri" href="${esc(u)}" style="display:block;text-align:center;padding:12px;border-radius:10px;text-decoration:none;color:#fff;font-weight:700;margin-top:8px">📧 Mail uygulamasında aç</a><div class="row" style="margin-top:8px"><button style="flex:1" id="mc">${label||"Kopyala"}</button><button style="flex:1" id="mx">Kapat</button></div></div>`;
+document.body.appendChild(el);el.querySelector("#mx").onclick=()=>el.remove();
+el.querySelector("#mc").onclick=()=>{navigator.clipboard.writeText(copyText).then(()=>toast("Kopyalandı"),()=>P("Kopyala:",copyText))}}
+function msum(){mpanel("Focus On PT - Günlük özet "+fd(iso(new Date())),summ(),summ())}
+function mbk(){mpanel("Focus On PT yedeği "+fd(iso(new Date())),"Yedek metnini aşağıya yapıştır:\n\n",JSON.stringify(S),"1) Yedeği kopyala",'<div class="mu" style="margin:6px 0">Önce yedeği kopyala, sonra maili aç ve mesaja yapıştır.</div>')}
+async function mset(){const a=await P("Mail adresi:",mailTo());if(a===null)return;const t=a.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(t))return toast("Geçerli bir mail adresi yaz");S.mail=t;save();render()}
+function closeD(){hclose(()=>{$("#md").remove();cur=null;render()})}
+async function ed(){const m=M(cur);const n=await P("Ad:",m.name);if(n)m.name=n;const p=await P("Telefon:",m.phone);if(p!==null)m.phone=p;save();det()}
+async function delM(){if(await C("“"+M(cur).name+"” üyesi, paketleri, ölçümleri ve tüm dersleri silinsin mi? Geri alınamaz.","Sil","Vazgeç")){S.lessons=S.lessons.filter(l=>!l.mids.includes(cur));S.members=S.members.filter(m=>m.id!==cur);save();closeD()}}
+async function ap(n){if(!n){n=+await P("Ders sayısı:");if(!n)return}const pr=+await P("Paket ücreti (₺):")||0;const pd=await P("Şimdi ödenen (₺) — boş bırakırsan tamamı ödendi:","");const paid=pd===""||pd===null?pr:+pd||0;const v=+await P("Kaç gün geçerli? (boş = sınırsız)","")||0;const e=new Date();e.setDate(e.getDate()+v);M(cur).packs.push({d:iso(new Date()),n,price:pr,paid,exp:v?iso(e):""});save();det()}
+async function pay(i){const p=M(cur).packs[i];const a=+await P("Alınan ödeme (₺):",p.price-(p.paid??p.price));if(!a)return;p.paid=(p.paid??p.price)+a;save();det()}
+function ph(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement("canvas"),s=Math.min(im.width,im.height);c.width=c.height=160;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,160,160);M(cur).photo=c.toDataURL("image/jpeg",.7);save();det()};im.src=r.result};r.readAsDataURL(f)}
+function rph(){delete M(cur).photo;save();det()}
+async function ep(i){const p=M(cur).packs[i];const n=await P("Ders sayısı:",p.n);if(n===null)return;const pr=await P("Paket ücreti (₺):",p.price);if(pr===null)return;const pd=await P("Toplam ödenen (₺):",p.paid??p.price);if(pd===null)return;const ex=await P("Bitiş tarihi (gg.aa.yyyy, boş = sınırsız):",p.exp?fd(p.exp):"");if(ex===null)return;let e="";if(ex.trim()){const m=ex.trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);if(!m)return toast("Tarihi 25.12.2026 gibi yaz");e=m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0")}
+if(!(+n>0))return toast("Ders sayısı geçersiz");p.n=+n;p.price=+pr||0;p.paid=+pd||0;p.exp=e;save();det()}
+async function dp(i){if(await C("Paket silinsin mi?")){M(cur).packs.splice(i,1);save();det()}}
+function am(){const g=i=>$("#"+i).value,x={d:g("md2")||iso(new Date()),h:g("mt"),w:g("mw"),waist:g("mb"),hip:g("mk"),arm:g("ma"),chest:g("mc"),fat:g("mf")};if(!x.w&&!x.waist&&!x.hip&&!x.arm&&!x.chest&&!x.fat)return toast("En az bir ölçü gir");const m=M(cur);m.meas.push(x);m.meas.sort((a,b)=>a.d.localeCompare(b.d));save();det()}
+function line(p){if(p.length<1)return `<div class="mu">Veri yok</div>`;const W=320,H=140,pd=24,vs=p.map(a=>a.v),mn=Math.min(...vs),mx=Math.max(...vs),r=mx-mn||1;
+const X=i=>pd+(p.length>1?i*(W-2*pd)/(p.length-1):(W-2*pd)/2),Y=v=>H-pd-(v-mn)/r*(H-2*pd);
+return `<svg viewBox="0 0 ${W} ${H}"><polyline fill="none" stroke="var(--ac)" stroke-width="3" points="${p.map((a,i)=>X(i)+","+Y(a.v)).join(" ")}"/>${p.map((a,i)=>`<circle cx="${X(i)}" cy="${Y(a.v)}" r="4" fill="var(--ac)"/><text x="${X(i)}" y="${Y(a.v)-9}" font-size="11" text-anchor="middle" fill="var(--tx)">${a.v}</text><text x="${X(i)}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--mu)">${a.l}</text>`).join("")}</svg>`}
+function bars(a){const W=320,H=140,pd=22,mx=Math.max(...a.map(x=>x.v),1),bw=(W-2*pd)/a.length;
+return `<svg viewBox="0 0 ${W} ${H}">${a.map((x,i)=>{const h=x.v/mx*(H-2*pd-10);return `<rect x="${pd+i*bw+4}" y="${H-pd-h}" width="${bw-8}" height="${h}" rx="4" fill="var(--ac)"/><text x="${pd+i*bw+bw/2}" y="${H-pd-h-4}" font-size="11" text-anchor="middle" fill="var(--tx)">${x.v}</text><text x="${pd+i*bw+bw/2}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--mu)">${x.l}</text>`}).join("")}</svg>`}
+function ig(){const now=new Date(),ms=[];for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);ms.push(iso(d).slice(0,7))}
+const inc=ms.map(k=>({l:k.slice(5),v:S.members.reduce((a,m)=>a+m.packs.filter(p=>p.d.startsWith(k)).reduce((b,p)=>b+p.price,0),0)}));
+const cnt=ms.map(k=>({l:k.slice(5),v:S.lessons.filter(l=>l.done&&l.date.startsWith(k)).length}));
+const low=S.members.filter(m=>left(m)<=2||(!m.frozen&&expOf(m)&&left(m)>0&&dleft(expOf(m))<=7));const bor=S.members.filter(m=>debt(m)>0);
+return `<div class="card"><div class="mu">Bu ay gelir</div><div style="font-size:28px;font-weight:800">${inc[5].v.toLocaleString("tr-TR")} ₺</div><div class="mu">Bu ay yapılan ders: ${cnt[5].v}</div></div>
+<div class="card"><b>Aylık gelir (₺)</b>${bars(inc)}</div><div class="card"><b>Aylık verilen ders (verim)</b>${bars(cnt)}</div>
+<div class="card"><b>Yenileme yaklaşanlar</b>${low.map(m=>`<div class="row sp" style="margin-top:8px"><span>${esc(m.name)} ${badge(m)}</span><button onclick="go(wa(M('${m.id}')),'_blank')">💬</button></div>`).join("")||`<div class="mu">Şu an yok</div>`}</div>
+<div class="card"><b>Ödeme bekleyenler</b> <span class="mu">(toplam ${bor.reduce((a,m)=>a+debt(m),0)} ₺)</span>${bor.map(m=>`<div class="row sp" style="margin-top:8px"><span>${esc(m.name)} <b class="bad">${debt(m)} ₺</b></span><button onclick="go(waD(M('${m.id}')),'_blank')">💬</button></div>`).join("")||`<div class="mu">Borç yok 🎉</div>`}</div>
+<div class="card"><b>📧 Mail</b><div class="mu" style="margin:4px 0 8px">Alıcı: ${esc(mailTo())}</div><button class="pri" style="width:100%" onclick="msum()">Günün özetini gönder</button><div class="row" style="margin-top:8px"><button style="flex:1" onclick="mbk()">Yedeği mail at</button><button style="flex:1" onclick="mset()">Adresi değiştir</button></div></div>
+<div class="card"><b>Güvenlik</b><div class="mu">Uygulamayı açarken PIN sorar. PIN’i unutursan yedeğin olmadan verilere erişemezsin.</div><button style="width:100%;margin-top:8px" onclick="setPin()">${S.pin?"PIN kilidini kaldır":"PIN kilidi ayarla"}</button></div>
+<div class="card"><b>Yedek</b><div class="mu">Veriler bu telefonda saklanır.</div><div class="row" style="margin-top:8px"><button style="flex:1" onclick="bk()">Yedeği kopyala</button><button style="flex:1" onclick="rs()">Yedeği yükle</button></div></div>`}
+function bk(){navigator.clipboard.writeText(JSON.stringify(S)).then(()=>toast("Yedek kopyalandı. Notlarına yapıştır."),()=>P("Kopyala:",JSON.stringify(S)))}
+async function rs(){const t=await P("Yedek metnini yapıştır:");if(!t)return;try{const d=JSON.parse(t);if(d.members&&d.lessons){S=d;save();render()}}catch(e){toast("Geçersiz yedek")}}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{const t=b.dataset.t;if(t==="p"&&tab!=="p"&&hs>0){history.back();return}if(tab==="p"&&t!=="p")hpush();tab=t;render()});
+const W=m=>m.wk||(m.wk=[]);
+function wlist(m){const a=W(m).slice().sort((x,y)=>y.d.localeCompare(x.d));return `<div class="row sp"><span class="mu">${a.length} kayıt</span><button class="pri" onclick="wo('${m.id}')">+ Antrenman</button></div>`+a.slice(0,15).map(w=>`<div class="card"><div class="row sp"><b>${fd(w.d)}</b><span><button onclick="wo('${m.id}',null,'${w.id}')">✎</button> <button class="bad" onclick="dw('${m.id}','${w.id}')">✕</button></span></div><div style="white-space:pre-wrap;margin-top:6px;font-size:14px">${esc(w.t)}</div></div>`).join("")+(a.length>15?`<div class="mu">+${a.length-15} eski kayıt</div>`:"")}
+async function lw(lid){const l=S.lessons.find(x=>x.id===lid),ms=l.mids.map(M).filter(Boolean);if(!ms.length)return;const i=ms.length>1&&!(await C("Hangi üye için?",ms[0].name,ms[1].name))?1:0;wo(ms[i].id,l.date)}
+function wo(mid,d0,id){const m=M(mid),old=id?W(m).find(w=>w.id===id):null;let el=$("#wo");if(!el){el=document.createElement("div");el.id="wo";el.className="modal";el.style.zIndex=30;document.body.appendChild(el);hpush()}
+el.dataset.m=mid;el.dataset.id=id||"";
+el.innerHTML=`<div class="row sp"><button onclick="hclose(()=>$('#wo').remove())">← Geri</button><b>${esc(m.name)}</b></div><h3>Antrenman</h3><input id="wd" type="date" value="${old?old.d:d0||iso(new Date())}"><textarea id="wt" rows="10" placeholder="Squat 3x10 60kg&#10;Bench press 3x8 40kg&#10;Plank 3x45sn" style="width:100%;margin-top:8px;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px">${esc(old?old.t:"")}</textarea><div class="row" style="margin-top:8px"><button style="flex:1" onclick="wprev()">Sonuncuyu getir</button><button class="pri" style="flex:1" onclick="wsave()">Kaydet</button></div>`}
+function wprev(){const a=W(M($("#wo").dataset.m)).slice().sort((x,y)=>y.d.localeCompare(x.d));if(a[0])$("#wt").value=a[0].t;else toast("Önceki antrenman yok")}
+function wsave(){const el=$("#wo"),m=M(el.dataset.m),t=$("#wt").value.trim();if(!t)return toast("Antrenman yaz");const d=$("#wd").value||iso(new Date()),id=el.dataset.id;if(id){const w=W(m).find(x=>x.id===id);w.d=d;w.t=t}else W(m).push({id:uid(),d,t});save();hclose(()=>{el.remove();if(cur===m.id)det()})}
+async function dw(mid,id){if(await C("Antrenman kaydı silinsin mi?")){const m=M(mid);m.wk=W(m).filter(w=>w.id!==id);save();det()}}
+async function nt(id){const l=S.lessons.find(x=>x.id===id),t=await P("Ders notu:",l.note||"");if(t!==null){l.note=t;save();render()}}
+function lh(m){const a=S.lessons.filter(l=>l.mids.includes(m.id)).sort((x,y)=>(y.date+y.time).localeCompare(x.date+x.time));if(!a.length)return `<div class="mu">Ders yok</div>`;
+return `<div class="mu" style="margin-bottom:6px">Yapılan ${a.filter(l=>l.done).length} · Planlı ${a.filter(l=>!l.done).length}</div>`+a.slice(0,20).map(l=>`<div class="card" style="padding:8px 12px"><div class="row sp"><span>${fd(l.date)} · ${l.time}</span><span class="badge ${l.done?"good":""}">${l.done?"Yapıldı":"Planlı"}</span></div>${l.note?`<div class="mu" style="margin-top:4px">📝 ${esc(l.note)}</div>`:""}</div>`).join("")+(a.length>20?`<div class="mu">+${a.length-20} eski ders</div>`:"")}
+function fz(){const m=M(cur);if(!m.frozen){m.frozen=iso(new Date());save();return det()}
+const n=Math.max(0,-dleft(m.frozen));m.packs.forEach(p=>{if(p.exp){const e=new Date(p.exp);e.setDate(e.getDate()+n);p.exp=iso(e)}});m.frozen=null;save();det();toast(n+" gün paket süresi eklendi")}
+const hp=s=>{let h=0;for(const c of s+"fpt")h=(h*31+c.charCodeAt(0))|0;return String(h)};
+function lock(){if(!S.pin)return;const el=document.createElement("div");el.className="modal";el.id="lk";el.style.zIndex=99;el.innerHTML=`<div style="margin-top:28vh;text-align:center"><h2>Focus On <b style="color:var(--ac)">PT</b></h2><input id="pn" type="password" inputmode="numeric" placeholder="PIN" style="text-align:center;max-width:200px"><br><br><button class="pri" onclick="unl()">Aç</button></div>`;document.body.appendChild(el)}
+function unl(){if(hp($("#pn").value)===S.pin)$("#lk").remove();else{$("#pn").value="";toast("Yanlış PIN")}}
+async function setPin(){if(S.pin){const p=await P("Kaldırmak için mevcut PIN:");if(p===null)return;if(hp(p)===S.pin){delete S.pin;save();render()}else toast("Yanlış PIN");return}
+const p=await P("Yeni PIN (en az 4 rakam):");if(p===null)return;if(/^\d{4,}$/.test(p)){S.pin=hp(p);save();render();toast("PIN ayarlandı")}else toast("En az 4 rakam gir")}
+let hs=0;
+function hpush(){try{history.pushState({a:1},"");hs++}catch(e){}}
+function hclose(fn){if(hs>0)history.back();else fn()}
+window.addEventListener("popstate",()=>{if(hs>0)hs--;const w=$("#wo");if(w){w.remove();if(cur&&$("#md"))det();return}const d=$("#md");if(d){d.remove();cur=null;render();return}if(tab!=="p"){tab="p";render()}});
+render();lock();
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script></body></html>
